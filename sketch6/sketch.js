@@ -1,34 +1,64 @@
-const STEP = 1;
+const SQUARE_SIZE = 10;
+
+var squareMatrix = [];
+
 
 function setup() {
-  createCanvas(500, 500);
+  createCanvas(1000, 500);
+  background(255);
   noStroke();
-  frameRate(1);
+  setupColors();
 }
 
-var xoff = 0;
-var yoff = 10000;
-var zoff = 1000;
-var inc = 0.1;
-var lastX = 0;
-var lastY = 0;
-
 function draw() {
-  background(0);
-  for (let x = 0; x < width; x = x + STEP) {
-    for (let y = 0; y < height; y = y + STEP) {
-      let col = 0;
-      if(x > width / 2) {
-        col = random();
-      } else {
-        col = noise(xoff, yoff);
+  background(255);
+  setupBoard();
+}
+
+function setupColors() {
+  for (let x = 0; x < width; x = x + SQUARE_SIZE) {
+    var row = [];
+    for (let y = 0; y < height; y = y + SQUARE_SIZE) {
+      var square = new SquareBlock();
+      square.x = x;
+      square.y = y;
+      row.push(square);
+    }
+    squareMatrix.push(row);
+  }
+  for (let x = 0; x < squareMatrix.length; x = x + 1) {
+    for (let y = 0; y < squareMatrix[0].length; y = y + 1) {
+      if(x - 1 >= 0) {
+        squareMatrix[x][y].neighbors.push(squareMatrix[x - 1][y])
       }
-      fill(col * 255);
-      square(x, y, STEP, STEP);
-      xoff += inc;
-      yoff += inc;
-      zoff += inc;
+      if(y - 1 >= 0) {
+        squareMatrix[x][y].neighbors.push(squareMatrix[x][y - 1]);
+      }
+      if(y + 1 < squareMatrix[0].length) {
+        squareMatrix[x][y].neighbors.push(squareMatrix[x][y + 1]);
+      }
+      if(x + 1 < squareMatrix.length) {
+        squareMatrix[x][y].neighbors.push(squareMatrix[x + 1][y]);
+      }
     }
   }
-  noLoop();
+}
+
+function setupBoard() {
+  squareMatrix.forEach(row => {
+    row.forEach(curr => {
+      curr.paint();
+      curr.reduceAlpha();
+    });
+  });
+}
+
+function mousePressed() {
+  const indexX = int(mouseX / SQUARE_SIZE);
+  const indexY = int(mouseY / SQUARE_SIZE);
+  selectedAtIndexes(indexX, indexY);
+}
+
+function selectedAtIndexes(x, y) {
+  squareMatrix[x][y].colorfy(5);
 }
